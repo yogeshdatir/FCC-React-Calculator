@@ -55,14 +55,85 @@ const Calculator = (props: Props) => {
 
   const handleInput = (e: any, code: any) => {
     e.preventDefault();
+    let result: any = "0";
+    
+    const isLastInputOperator =
+      display[display.length - 1] === "+" ||
+      display[display.length - 1] === "*" ||
+      display[display.length - 1] === "/" ||
+      display[display.length - 1] === "-";
+
+    const isSecondLastInputOperator =
+      display[display.length - 2] === "+" ||
+      display[display.length - 2] === "*" ||
+      display[display.length - 2] === "/" ||
+      display[display.length - 2] === "-";
+
+    const isLastInputOperatorExceptMinus =
+      display[display.length - 1] !== "+" &&
+      display[display.length - 1] !== "*" &&
+      display[display.length - 1] !== "/";
+      
     switch (code) {
       case "clear":
         setDisplay("0");
         break;
+      case "-":
+        if (
+          (isLastInputOperator && !isSecondLastInputOperator) ||
+          !isLastInputOperator
+        ) {
+          appendToDisplay(code);
+        }
+        break;
+      case "+":
+      case "/":
+      case "*":
+        if (isLastInputOperatorExceptMinus) {
+          appendToDisplay(code);
+        }
+        break;
+      case ".":
+        let appendDecimal = true;
+        for (let i = display.length - 1; i--; i >= 0) {
+          if (["+", "-", "/", "*"].includes(display[i])) {
+            appendDecimal = !display.substr(i).includes(".");
+            break;
+          }
+        }
+        if (
+          !(
+            display.includes("+") ||
+            display.includes("-") ||
+            display.includes("/") ||
+            display.includes("*")
+          )
+        ) {
+          appendDecimal = !display.includes(".");
+        }
+        appendDecimal && setDisplay(display + code);
+        break;
+      case "=":
+        // eslint-disable-next-line no-eval
+        result = eval(display);
+        setDisplay(result + "");
+        break;
+      case "del":
+        result = display.slice(0, -1);
+        setDisplay(result);
+        break;
 
       default:
-        setDisplay(display + code);
+        appendToDisplay(code);
         break;
+    }
+  };
+
+  const appendToDisplay = (code: string) => {
+    if (display === "0") {
+      setDisplay("" + code);
+    } else {
+      setDisplay(display + code);
     }
   };
 
@@ -75,7 +146,10 @@ const Calculator = (props: Props) => {
           <Key
             key={index}
             id={key.id}
-            onClick={(e) => handleInput(e, key?.value)}
+            onClick={(e) => {
+              if (key?.value === "x") handleInput(e, "*");
+              else handleInput(e, key?.value);
+            }}
           >
             {key.value}
           </Key>
