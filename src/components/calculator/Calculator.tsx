@@ -114,6 +114,11 @@ const Calculator = (props: Props) => {
         appendDecimal && setDisplay(display + code);
         break;
       case "=":
+        if (display.includes("*-+")) {
+          let temp = display.replace("*-+", "+");
+          setDisplay(eval(temp));
+          break;
+        }
         // eslint-disable-next-line no-eval
         result = eval(display);
         setDisplay(result + "");
